@@ -29,7 +29,6 @@ parent('Prince Andrew','Princess Eugeine').
 parent('Prince Edward','Princess Louise').
 parent('Prince Edward','Prince James').
 
-
 parent('Prince William','Prince George').
 parent('Prince William','Princess Charlotte').
 parent('Prince William','Prince Louis').
@@ -103,13 +102,13 @@ princess_1(X):-monarch(X),female(X),generation(1).
 
 princess_2(X):-monarch(X),female(X),generation(2).
 
-princess_3(X):-monarch(X),female(X).
+princess_3(X):-monarch(X),female(X),generation(3).
 
 princess_4(X):-monarch(X),female(X),generation(4).
 
-monarch_wife(W,H):-female(W),married(H,W).
+monarch_wife(W,H):-female(W),married(H,W),monarch(H).
 
-monarch_husband(H,W):-male(H),married(H,W).
+monarch_husband(H,W):-male(H),married(H,W),monarch(W).
 
 %person(P):-(male(P);female(P)).
 
@@ -121,7 +120,7 @@ son(S,P):-male(S),parent(P,S).
 
 daughter(D,P):-female(D),parent(P,D).
 
-sibling(X,Y):-brother(X,Y);sister(X,Y),X\=Y.
+sibling(X,Y):- X\=Y,brother(X,Y);sister(X,Y).
 
 child(X,Y):-son(X,Y);daughter(X,Y).
 
