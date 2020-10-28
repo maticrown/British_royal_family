@@ -1,0 +1,1 @@
+docker run -it -v %cd%:/proj swipl
