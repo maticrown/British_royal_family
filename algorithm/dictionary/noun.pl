@@ -23,6 +23,14 @@ n(princess,  X^ princess(X)).
 n(parent, X^ parent(X)).
 n(father, X^ father(X)).
 n(mother, X^ mother(X)).
+n(brother, X^ brother(X)).
+n(sister, X^ sister(X)).
+n(son, X^ son(X)).
+n(daughter, X^ daughter(X)).
+n(child, X^ child(X)).
+n(grandparent, X^ grandparent(X)).
+n(grandmother, X^ grandmother(X)).
+n(grandfather, X^ grandfather(X)).
 %%%
 
 %%%
