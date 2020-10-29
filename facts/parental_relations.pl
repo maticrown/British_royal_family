@@ -20,7 +20,7 @@ parent(anne,peter).
 parent(anne,zara).
 
 parent(andrew,beatrice).
-parent(andrew,'Princess Eugeine').
+parent(andrew,eugeine).
 
 parent(edward,louise).
 parent(edward,james).
@@ -34,5 +34,5 @@ parent(harry,archie).
 parent(peter,savannah).
 parent(peter,isla).
 
-parent(zara,'Princess Mia Grace').
-parent(zara,'Princess Lena Elizabeth').
+parent(zara,miaGrace).
+parent(zara,lenaElizabeth).

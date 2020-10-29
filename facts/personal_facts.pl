@@ -20,6 +20,9 @@ female(margaret).
 female(margdianaSpenceraret).
 female(catherine).
 female(sarah).
+female(eugeine).
+female(miaGrace).
+female(lenaElizabeth).
 
 male(charles).
 male(edward).
