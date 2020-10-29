@@ -1,0 +1,363 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<!-- saved from url=(0045)http://www.bowdoin.edu/~allen/nlp/pereiraTalk -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+   
+   <meta name="GENERATOR" content="Mozilla/4.7 (Macintosh; U; PPC) [Netscape]">
+   <title>pereiraTalk</title>
+</head>
+<body>
+
+<pre>%%%&nbsp; TALK Program, adapted from Pereira &amp; Shieber (1987).
+
+:- op(500,xfy,'&amp;').
+:- op(510,xfy,'=&gt;').
+:- op(100,fx,'`').
+
+run :-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; write('&gt;&gt; '),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % prompt the user
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read_sent(Words),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % read a sentence
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; talk(Words, Reply),&nbsp;&nbsp;&nbsp;&nbsp; % process it with TALK
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print_reply(Reply),&nbsp;&nbsp;&nbsp;&nbsp; % generate a reply
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % pocess more sentences
+
+%%% talk(Sentence, Reply)
+%%%
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Sentence ==&gt; sentence to form a reply to
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Reply&nbsp;&nbsp;&nbsp; &lt;== appropriate reply to the sentence
+
+talk(Sentence, Reply) :-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % parse the sentence
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parse(Sentence, LF, Type),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % convert the FOL logical form into a Horn&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % clause, if possible
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clausify(LF, Clause, FreeVars), !,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % concoct a reply, based on the clause and&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % whether sentence was a query or assertion
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reply(Type, FreeVars, Clause, Reply).
+
+% No parse was found; sentence is too difficult for the grammar
+% or the lexicon.
+talk(_Sentence, error('too difficult')).
+
+
+%%% parse(sentence, LF, Type)
+%%%&nbsp;
+%%% Sentence&nbsp;&nbsp;&nbsp; ==&gt; sentence to parse&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp; LF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;== logical form (in FOL) of sentence&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Type&nbsp;&nbsp;&nbsp; &lt;== type of Sentence&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (query or assertion)
+
+% Parsing an assertion: a finite sentence without gaps.
+parse(Sentence, LF, assertion) :- s(LF, nogap, Sentence, []).
+
+% Parsing a query: a question.
+parse(Sentence, LF, query) :- q(LF, Sentence, []).
+
+
+/* Nonterminal names:
+&nbsp;&nbsp; q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Question&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; sinv&nbsp;&nbsp;&nbsp; INVerted Sentence&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; noninverted Sentence
+&nbsp;&nbsp; np&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Noun Phrase
+&nbsp;&nbsp; vp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Verb Phrase&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; iv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Intransitive Verb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; tv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Transitive Verb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; aux&nbsp;&nbsp;&nbsp;&nbsp; AUXiliary verb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; rov&nbsp;&nbsp;&nbsp;&nbsp; subject_Object Raising Verb
+&nbsp;&nbsp; optrel&nbsp; OPTional RELative clause
+&nbsp;&nbsp; relpron RELative PRONoun&nbsp;
+&nbsp;&nbsp; whpron&nbsp; WH PRONoun&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; det&nbsp;&nbsp;&nbsp;&nbsp; DETerminer&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Noun&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; pn&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Proper Noun
+
+&nbsp; Typical order of and values for arguments:
+
+&nbsp; 1.&nbsp;&nbsp;&nbsp; verb form:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; (main verbs) finite, nonfinite, etc.
+&nbsp;&nbsp;&nbsp;&nbsp; (auxiliaries and raising verbs) Form1-Form2&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where Forml is form of embedded VP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Form2 is form of verb itself&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; 2.&nbsp;&nbsp;&nbsp; FOL&nbsp;&nbsp; logical form
+&nbsp; 3.&nbsp;&nbsp;&nbsp; gap&nbsp;&nbsp; information:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nogap or gap(Nonterm, Var)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where Nonterm is nonterminal for gap&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Var is the LF variable that
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the filler will bind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+*/
+
+%%% Declarative Sentences&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+s(S, GapInfo)&nbsp;&nbsp; --&gt; np(VP^S, nogap), vp(finite, VP, GapInfo).
+
+%%% Inverted Sentences&nbsp;&nbsp;
+
+sinv(S, GapInfo) --&gt; aux(finite/Form, VP1^VP2),&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np(VP2^S, nogap), vp(Form, VP1, GapInfo).
+
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Questions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+q(S =&gt; `answer(X))&nbsp;&nbsp; --&gt; whpron, vp(finite, X^S, nogap).
+q(S =&gt; `answer(X))&nbsp;&nbsp; --&gt; whpron, sinv(S, gap(np, X)).
+q(S =&gt; `answer(yes)) --&gt; sinv(S, nogap).
+q(S =&gt; `answer(yes)) --&gt; [is],&nbsp; np((X^S0)^S, nogap),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np((X^true)^exists(X,S0&amp;true), nogap).
+
+%%% Noun Phrases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+np(NP, nogap) --&gt; det(N2^NP), n(N1), optrel(N1^N2).
+np(NP, nogap) --&gt; pn(NP).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+np((X^S)^S, gap(np, X)) --&gt; [].
+
+%%% Verb Phrases&nbsp;
+
+vp(Form, X^S, GapInfo)&nbsp; --&gt; tv(Form, X^VP), np(VP^S, GapInfo).
+vp(Form, VP, nogap)&nbsp;&nbsp;&nbsp;&nbsp; --&gt; iv(Form, VP).
+vp(Form1, VP2, GapInfo) --&gt; aux(Form1/Form2, VP1^VP2),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; vp(Form2, VP1, GapInfo).
+vp(Form1, VP2, GapInfo) --&gt; rov(Form1/Form2, NP^VP1^VP2),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np(NP, GapInfo), vp(Form2, VP1, nogap).
+vp(Form2, VP2, GapInfo) --&gt; rov(Form1/Form2, NP^VP1^VP2),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np(NP, nogap), vp(Form1, VP1, GapInfo).
+vp(finite, X^S, GapInfo) --&gt; [is], np((X^P)^exists(X,S&amp;P), GapInfo).
+
+%%% Relative Clauses
+
+optrel((X^S1)^(X^(S1&amp;S2))) --&gt; relpron, vp(finite, X^S2, nogap).
+optrel((X^S1)^(X^(S1&amp;S2))) --&gt; relpron, s(S2, gap(np, X)).
+optrel(N^N) --&gt; [].
+
+% Dictionary&nbsp;&nbsp;&nbsp;&nbsp;
+
+% Verb&nbsp; entry arguments:
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nonfinite form of the verb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; third person singular present tense form of the verb
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; past tense form of the verb
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; past participle form of the verb
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pres participle form of the verb
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logical form of the verb
+
+iv(nonfinite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [IV], {iv(IV, _, _, _, _, LF)}.
+iv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [IV], {iv(_, IV, _, _, _, LF)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [IV], {iv(_, _, IV, _, _, LF)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iv(past_participle, LF) --&gt; [IV], {iv(_, _, _, IV, _, LF)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iv(pres_participle, LF) --&gt; [IV], {iv(_, _, _, _, IV, LF)}.
+iv(halt, halts, halted, halted, halting,&nbsp;&nbsp; X^ `halts(X)).
+iv(run,&nbsp; runs,&nbsp; ran,&nbsp;&nbsp;&nbsp; run,&nbsp;&nbsp;&nbsp; running,&nbsp;&nbsp; X^ `runs(X)).
+
+tv(nonfinite,&nbsp;&nbsp; LF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [TV],&nbsp;&nbsp; {tv(TV, _, _, _, _, LF)}.
+tv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [TV],&nbsp;&nbsp; {tv(_, TV, _, _, _, LF)}.
+tv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [TV],&nbsp;&nbsp; {tv(_, _, TV, _, _, LF)}.
+tv(past_participle,&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [TV],&nbsp;&nbsp; {tv(_, _, _, TV, _, LF)}.
+tv(pres_participle,&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [TV],&nbsp;&nbsp; {tv(_, _, _, _, TV, LF)}.
+
+tv(write,&nbsp;&nbsp; writes,&nbsp;&nbsp; wrote,&nbsp;&nbsp;&nbsp;&nbsp; written,&nbsp;&nbsp; writing,&nbsp;&nbsp;&nbsp; X^Y^ `writes(X,Y)).
+tv(read,&nbsp;&nbsp;&nbsp; reads,&nbsp;&nbsp;&nbsp; read,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reading,&nbsp;&nbsp;&nbsp; X^Y^ `reads(X,Y)).
+tv(speak,&nbsp;&nbsp; speaks,&nbsp;&nbsp; spoke,&nbsp;&nbsp;&nbsp;&nbsp; spoken,&nbsp;&nbsp;&nbsp; speaking,&nbsp;&nbsp; X^Y^ `speaks(X,Y)).
+tv(meet,&nbsp;&nbsp;&nbsp; meets,&nbsp;&nbsp;&nbsp; met,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; met,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; meeting,&nbsp;&nbsp;&nbsp; X^Y^ `meets(X,Y)).
+tv(concern, concerns, concerned, concerned, concerning, X^Y^ `concerns(X,Y)).
+tv(run,&nbsp;&nbsp;&nbsp;&nbsp; runs,&nbsp;&nbsp;&nbsp;&nbsp; ran,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; running,&nbsp;&nbsp;&nbsp; X^Y^ `runs(X,Y)).
+
+rov(nonfinite&nbsp;&nbsp; /Requires,&nbsp;&nbsp;&nbsp; LF) --&gt; [ROV], {rov(ROV, _, _, _, _, LF, Requires)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+rov(finite&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /Requires,&nbsp;&nbsp;&nbsp; LF) --&gt; [ROV], {rov(_, ROV, _, _, _, LF, Requires)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+rov(finite&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /Requires,&nbsp;&nbsp;&nbsp; LF) --&gt; [ROV], {rov(_, _, ROV, _, _, LF, Requires)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+rov(past_participle/Requires, LF) --&gt; [ROV], {rov(_, _, _, ROV, _, LF, Requires)}.
+rov(pres_participle/Requires, LF) --&gt; [ROV], {rov(_, _, _, _, ROV, LF, Requires)}.
+rov(want,&nbsp;&nbsp; wants,&nbsp;&nbsp;&nbsp; wanted,&nbsp;&nbsp;&nbsp; wanted,&nbsp;&nbsp;&nbsp; wanting,
+&nbsp;&nbsp;&nbsp;&nbsp; % semantics is partial execution of&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; % NP ^ VP ^ Y ^ NP( X^want(Y,X,VP(X))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ((X^ `want(Y, X, Comp))^S) ^ (X^Comp) ^ Y ^ S,
+&nbsp;&nbsp;&nbsp;&nbsp; % form of VP required:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; infinitival).
+
+aux(Form, LF) --&gt; [Aux], {aux(Aux, Form, LF)}.
+aux(to,&nbsp;&nbsp;&nbsp; infinitival/nonfinite,&nbsp;&nbsp;&nbsp; VP^ VP).
+aux(does,&nbsp; finite/nonfinite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VP^ VP).
+aux(did,&nbsp;&nbsp; finite/nonfinite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VP^ VP).
+aux(could, finite/nonfinite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VP^ VP).&nbsp;
+aux(have,&nbsp; nonfinite/past_participle, VP^ VP).&nbsp;
+aux(has,&nbsp;&nbsp; finite/past_participle,&nbsp;&nbsp; VP^ VP).&nbsp;
+aux(been,&nbsp; past_participle/present_participle, VP^ VP).&nbsp;
+aux(be,&nbsp;&nbsp;&nbsp; nonfinite/present_participle,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VP^ VP).&nbsp;
+
+relpron&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [RP], {relpron(RP)}.&nbsp;&nbsp;
+relpron(that).
+relpron(who).
+relpron(whom).
+
+whpron&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [WH], {whpron(WH)}.
+whpron(who).
+whpron(whom).
+whpron(what).
+
+det(LF)&nbsp;&nbsp; --&gt; [D], {det(D, LF)}.
+det(every,&nbsp; (X^S1) ^ (X^S2) ^ all(X, S1=&gt;S2)).
+det(a,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (X^S1) ^ (X^S2) ^ exists(X, S1&amp;S2)).
+det(some,&nbsp;&nbsp; (X^S1) ^ (X^S2) ^ exists(X, S1&amp;S2)).
+
+n(LF)&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [N], {n(N, LF)}.
+n(author,&nbsp;&nbsp;&nbsp;&nbsp; X^ `author(X)).
+n(book,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X^ `book(X)).
+n(professor,&nbsp; X^ `professor(X)).
+n(program,&nbsp;&nbsp;&nbsp; X^ `program(X)).
+n(programmer, X^ `programmer(X)).
+n(student,&nbsp;&nbsp;&nbsp; X^ `student(X)).
+n(person,&nbsp;&nbsp;&nbsp;&nbsp; X^ `person(X)).
+n(language,&nbsp;&nbsp; X^ `language(X)).
+
+pn((E^S)^S) --&gt; [PN], {pn(PN, E)}.
+pn(allen,&nbsp;&nbsp;&nbsp; allen).
+pn(bruce,&nbsp;&nbsp;&nbsp; bruce).
+pn(bertrand, bertrand).
+pn(terry,&nbsp;&nbsp;&nbsp; terry).
+pn(bill,&nbsp;&nbsp;&nbsp;&nbsp; bill).
+pn(david,&nbsp;&nbsp;&nbsp; david).
+pn(kathy,&nbsp;&nbsp;&nbsp; kathy).
+pn(behshad,&nbsp; behshad).
+pn(shane,&nbsp;&nbsp;&nbsp; shane).
+pn(principia, principia).
+pn(shrdlu,&nbsp;&nbsp; shrdlu).
+pn(prolog,&nbsp;&nbsp; prolog).
+pn(english,&nbsp; english).
+pn(chinese,&nbsp; chinese).
+pn(korean,&nbsp;&nbsp; korean).
+pn(swahili,&nbsp; swahili).
+
+%%%&nbsp; Clausifier
+
+%%%&nbsp; clausify(FOL, Clause, FreeVars)
+%%%
+%%%&nbsp; FOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ==&gt; FOL expression to be converted to clause form&nbsp;
+%%%&nbsp; Clause&nbsp;&nbsp; &lt;== clause form of FOL expression&nbsp;
+%%%&nbsp; FreeVars &lt;== free variables in clause
+
+% Universals: variable is left implicitly scoped.
+clausify(all(X,F0),F,[X|V]) :- clausify(F0,F,V).
+
+% Implications: consequent must be a literal,
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; antecedent is clausified specially.
+clausify(A0=&gt;C0,(C:-A),V) :- clausify_literal(C0,C),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clausify_antecedent(A0,A,V).
+
+% Literals: left unchanged (except literal marker is removed).
+clausify(C0,C,[]) :- clausify_literal(C0,C).
+
+% Note that conjunctions and existentials are&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+% disallowed, since they can't form Horn clauses.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+%%% clausify_antecedent(FOL, Clause, FreeVars)&nbsp;&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp; FOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ==&gt; FOL expression to be converted to clause form
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Clause&nbsp;&nbsp; &lt;== clause form of FOL expression&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp; FreeVars ==&gt; list of free variables in clause&nbsp;&nbsp;&nbsp;
+
+% Literals: left&nbsp; unchanged (except literal marker is removed).
+clausify_antecedent(L0,L,[]) :- clausify_literal(L0,L).
+
+% Conjunctions: each conjunct is clausified separately.
+clausify_antecedent(E0&amp;F0, (E,F), V) :-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clausify_antecedent(E0,E,V0),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clausify_antecedent(F0,F,V1),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; conc(V0,V1,V).
+
+% Existentials: variable is left implicitly scoped.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+clausify_antecedent(exists(X,F0), F, [X|V]) :-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clausify_antecedent(F0,F,V).
+
+%%%&nbsp; clausify_literal(Literal, Clause)&nbsp;&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Literal ==&gt; FOL literal to be converted
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to clause form
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Clause&nbsp; &lt;== clause form of FOL expression
+
+% Literal is left unchanged (except literal marker is removed).&nbsp;
+clausify_literal(`L, L).
+
+% Auxiliary Predicates
+
+conc([], List, List).
+conc([Element|Rest], List, [Element|LongRest]) :-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; conc(Rest, List, LongRest).
+
+%%% read_sent(Words)
+%%% input ==&gt; series of words terminated by a new line character
+%%% Words &lt;== list of the words
+read_sent(Words) :- get0(Char), read_sent(Char, Words).
+
+read_sent(C, []) :- newline(C), !.
+read_sent(C, Words) :- space(C), !, get0(Char),&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read_sent(Char, Words).
+read_sent(C, [Word|Words]) :- read_word(C, Chars, Next),&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name(Word, Chars),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read_sent(Next, Words).
+
+read_word(C, [], C) :- space(C), !.
+read_word(C, [], C) :- newline(C), !.
+read_word(C, [C|Chars], Last) :- get0(Next),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read_word(Next, Chars, Last).
+
+newline(10).
+space(32).
+
+%%% reply(Type, FreeVars, Clause, Reply)
+%%%
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Type&nbsp;&nbsp;&nbsp; ==&gt;&nbsp;&nbsp;&nbsp;&nbsp; the constant "query" or "assertion"&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; depending on whether clause should&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; be interpreted as a query or assertion&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp; FreeVars&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ==&gt;&nbsp;&nbsp;&nbsp;&nbsp; the free variables (to be&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interpreted existentially) in the clause
+%%% Clause ==&gt; the clause being replied to
+%%% Reply&nbsp; &lt;== the reply
+%%%
+%%% If the clause is interpreted as an assertion,
+%%% the predicate has a side effect of asserting
+%%% the clause to the database.
+
+%Replying to a query.
+reply(query, FreeVars,
+&nbsp;&nbsp;&nbsp;&nbsp; (answer(Answer):-Condition), Reply) :-
+&nbsp;&nbsp; % find all the answers that satisfy the query,
+&nbsp;&nbsp; % replying with that set if it exists, or "no"
+&nbsp;&nbsp; % or "none" if it doesn't.
+&nbsp;&nbsp;&nbsp;&nbsp; (setof(Answer, FreeVars^Condition, Answers)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; Reply = answer(Answers)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ;&nbsp; (Answer = yes
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; Reply = answer([no])
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ;&nbsp; Reply = answer([none]))), !.
+
+% Replying to an assertion.
+% assert the assertion and tell user what we asserted
+reply(assertion, _FreeVars, Assertion, asserted(Assertion)) :-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; assert(Assertion), !.
+
+% Replying to some other type of sentence.
+reply(_Type, _FreeVars, _Clause, error('unknown type')).
+
+
+%%% print_reply(Reply)
+%%%
+%%% Reply ==&gt; reply generated by reply predicate
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; that is to be printed to the standard output.
+
+print_reply(error(ErrorType)) :-
+&nbsp;&nbsp;&nbsp;&nbsp; write('Error: "'), write(ErrorType), write('."'), nl.
+
+print_reply(asserted(Assertion)) :-
+&nbsp;&nbsp;&nbsp;&nbsp; write('Asserted "'), write(Assertion), write('."'), nl.
+
+print_reply(answer(Answers)) :- print_answers(Answers).
+
+%%%&nbsp;&nbsp;&nbsp;&nbsp; print_answer(Answers)&nbsp;
+%%%&nbsp;&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Answers ==&gt; nonempty list of answers to be printed&nbsp;
+%%%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to the standard output separated by commas.
+
+print_answers([Answer]) :- !, write(Answer), write('.'), nl.
+
+print_answers([Answer|Rest]) :- write(Answer), write(', '),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print_reply(answer(Rest)).
+
+</pre>
+
+
+
+</body></html>

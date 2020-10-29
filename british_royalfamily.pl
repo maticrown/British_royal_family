@@ -1,10 +1,10 @@
 
 % loading the facts & relations
-:- consult('relations/parental_relations.pl').
-:- consult('relations/personal_facts.pl').
+:- consult('facts/parental_relations.pl').
+:- consult('facts/personal_facts.pl').
 :- consult('relations/family_relations.pl').
 :- consult('relations/monarchial_relations.pl').
-:- consult('relations/marriage_relations.pl').
+:- consult('facts/marriage_relations.pl').
 
 %%%% for parsing questions and answers
 :- op(500,xfy,'&').
