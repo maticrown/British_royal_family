@@ -10,7 +10,7 @@ n(person,     X^ person(X)).
 n(language,   X^ language(X)).
 */
 %%% added
-n(monarche,   X^ monarche(X)).
+n(monarch,   X^ monarch(X)).
 n(money,      X^ money(X)).
 n(acting_royal, X^ acting_royal(X)).
 n(gender,     X^ gender(X)).

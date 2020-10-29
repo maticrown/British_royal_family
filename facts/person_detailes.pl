@@ -65,32 +65,32 @@ monarch(eugiene).
 monarch(andrew).
 monarch(zara).
 
-born(victoria, 1819).
-born(alexandra, 1844).
-born(mary, 1867).
-born(simpson, 1896). % TODO: ?
-born(elizabethBowesLyon, 1900).
-born(elizabethII, 1926 ).
-born(margaret, 1930).
-born(dianaSpencer, 1961).
-born(anne, 1950).
-born(catherine, 1982).
-born(albert, 1819).
-born(edwardVII, 1841 ).
-born(georgeV, 1865).
-born(edwardVIII, 1894).
-born(georgeVI, 1895).
-born(philip, 1921).
-born(charles, 1948).
-born(andrew, 1960).
-born(edward, 1964).
-born(william, 1982).
-born(henry, 1984).
-born(george, 2013).
-born(charlotte, 2015).
-born(viscount, 1961).
-born(sarah, 1964).
-born(antony, 1930).
+births(victoria, 1819).
+births(alexandra, 1844).
+births(mary, 1867).
+births(simpson, 1896). % TODO: ?
+births(elizabethBowesLyon, 1900).
+births(elizabethII, 1926 ).
+births(margaret, 1930).
+births(dianaSpencer, 1961).
+births(anne, 1950).
+births(catherine, 1982).
+births(albert, 1819).
+births(edwardVII, 1841 ).
+births(georgeV, 1865).
+births(edwardVIII, 1894).
+births(georgeVI, 1895).
+births(philip, 1921).
+births(charles, 1948).
+births(andrew, 1960).
+births(edward, 1964).
+births(william, 1982).
+births(henry, 1984).
+births(george, 2013).
+births(charlotte, 2015).
+births(viscount, 1961).
+births(sarah, 1964).
+births(antony, 1930).
 
 died(victoria, 1901).
 died(alexandra, 1925).
