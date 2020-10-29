@@ -1,38 +1,38 @@
 %basis of parents
-parent('Prince Philip','Prince Charles').
-parent('Prince Philip','Prince Andrew').
-parent('Prince Philip','Prince Edward').
-parent('Prince Philip','Princess Anne').
+parent(philip,charles).
+parent(philip,andrew).
+parent(philip,edward).
+parent(philip,anne).
 
 
-parent('Queen Elizabeth II','Princess anne').
-parent('Queen Elizabeth II','Prince Charles').
-parent('Queen Elizabeth II','Prince Edward').
-parent('Queen Elizabeth II','Prince Andrew').
+parent(elizabethII,anne).
+parent(elizabethII,charles).
+parent(elizabethII,edward).
+parent(elizabethII,andrew).
 
 
-parent('Prince Charles','Prince William').
-parent('Prince Charles','Prince Harry').
-parent('Lady Diana','Prince Harry').
-parent('Lady Diana','Prince William').
+parent(charles,william).
+parent(charles,harry).
+parent(diana,harry).
+parent(diana,william).
 
-parent('Princess Anne','Prince Peter').
-parent('Princess Anne','Princess Zara').
+parent(anne,peter).
+parent(anne,zara).
 
-parent('Prince Andrew','Princess Beatrice').
-parent('Prince Andrew','Princess Eugeine').
+parent(andrew,beatrice).
+parent(andrew,'Princess Eugeine').
 
-parent('Prince Edward','Princess Louise').
-parent('Prince Edward','Prince James').
+parent(edward,louise).
+parent(edward,james).
 
-parent('Prince William','Prince George').
-parent('Prince William','Princess Charlotte').
-parent('Prince William','Prince Louis').
+parent(william,george).
+parent(william,charlotte).
+parent(william,louis).
 
-parent('Prince Harry','Archie').
+parent(harry,archie).
 
-parent('Prince Peter','Princess Savannah').
-parent('Prince Peter','Princess Isla').
+parent(peter,savannah).
+parent(peter,isla).
 
-parent('Princess Zara','Princess Mia Grace').
-parent('Princess Zara','Princess Lena Elizabeth').
+parent(zara,'Princess Mia Grace').
+parent(zara,'Princess Lena Elizabeth').

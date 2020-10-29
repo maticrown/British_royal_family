@@ -15,12 +15,12 @@ insert(A, [B|C], [B|D]) :- not(precedes(A,B)), !, insert(A, C, D).
 insert(A, C, [A|C]).
 
 
-older_than('Prince Charles', 'Princess Anne').
-older_than('Prince Charles', 'Prince Andrew').
-older_than('Prince Charles', 'Prince Edward').
-older_than('Princess Anne', 'Prince Andrew').
-older_than('Princess Anne', 'Prince Edward').
-older_than('Prince Andrew', 'Prince Edward').
+older_than(charles, anne).
+older_than(charles, andrew).
+older_than(charles, edward).
+older_than(anne, andrew).
+older_than(anne, edward).
+older_than(andrew, edward).
 
 successor(X, Y):- child_of(Y,X).
 
@@ -29,10 +29,10 @@ successionListIndependent(X, SuccessionList):-
 	findall(Y, child_of(Y,X), Children),
 	succession_sort(Children, SuccessionList).
 
-child_of('Prince Charles', 'Queen Elizabeth II').
-child_of('Princess Anne', 'Queen Elizabeth II').
-child_of('Prince Andrew', 'Queen Elizabeth II').
-child_of('Prince Edward', 'Queen Elizabeth II').
+child_of(charles, elizabethII).
+child_of(anne, elizabethII).
+child_of(andrew, elizabethII).
+child_of(edward, elizabethII).
 
 
 eldest(X,Year):-
@@ -50,7 +50,7 @@ actualSuccessor(Year):-
     possibleSuccessor(Year,X),
     eldest(X,Year).
 
-%oldest(P):-not(monarch('Prince Philip')),!.
+%oldest(P):-not(monarch(philip)),!.
 oldest(P):-
   aggregate(max(A,Pers),age(Pers,A),max(_,P)).
 

@@ -1,7 +1,7 @@
 
 %%women are direct heirs since they changed the law in 2011
 heir_to_throne(H):-
-  oldest(H),not(monarch_husband('Prince Philip',W)),monarch(W),!.
+  oldest(H),not(monarch_husband(philip,W)),monarch(W),!.
 
 
 generation(1;2;3;4).
