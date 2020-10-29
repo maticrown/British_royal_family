@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<!-- saved from url=(0043)http://www.bowdoin.edu/~allen/nlp/nlp7.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+   
+   <meta name="GENERATOR" content="Mozilla/4.7 (Macintosh; U; PPC) [Netscape]">
+   <title>nlp7</title>
+</head>
+<body>
+
+<h2>
+Application: A Question-Answering System</h2>
+This program is an adaptation of a question-answering system developed
+in Pereira and Shieber (pp 149-157).&nbsp; This is a simple program that
+demonstrates the main semantic ideas that can be represented by logical
+forms, quantifiers, and the lambda calculus.&nbsp; The complete program
+is given in the <a href="http://www.bowdoin.edu/~allen/nlp/pereiraTalk">attached
+file</a>.
+<p>This discussion illustrates how the program is used, what it can do,
+and some key points about how it represents, stores, and retrieves information
+that it has "learned" as it interacts with the user.
+</p><h4>
+Sample Dialog</h4>
+Here is a dialog that occurs with the program <tt>pereiraTalk</tt> (in
+the directory <tt>~allen/public_html/prolog</tt>) after typing consult(pereiraTalk).
+at the ?- prompt:
+<pre>?- run.
+&gt;&gt; principia is a book
+Asserted "book(principia)."
+&gt;&gt; bertrand wrote every book
+Asserted "writes(bertrand, _G332):-book(_G332)."
+&gt;&gt; what did bertrand write
+principia.
+&gt;&gt; what did allen write
+no.
+&gt;&gt; who wrote every book
+Error: "too difficult."
+&gt;&gt; who wrote principia
+bertrand.
+&gt;&gt; bruce read every book that bertrand wrote
+Asserted "reads(bruce, _G379):-book(_G379), writes(bertrand, _G379)."
+&gt;&gt; shrdlu is a book
+Asserted "book(shrdlu)."
+&gt;&gt; what did bruce read
+principia, shrdlu.
+&gt;&gt;</pre>
+As is evident, the program stores information about what has been asserted
+and uses that information to answer questions, provided that it can parse
+the assertions and questions that are entered.
+<p>Successful parsing depends on syntactic correctness.&nbsp; Parsable
+assertions result in the message "Asserted: C" where C is a Prolog <i>rule</i>
+or <i>fact.</i>&nbsp; Not shown in this excange is the program's adding
+this fact to the database with which it has started (facts and rules defining
+the basic grammar and lexicon), and the program's translation of the original
+assertion into a logical form, which is its semantic representation.
+</p><p>Parsable questions are answered by a message "yes" (if the question
+is a yes/no question and the answer is true according to the facts and
+rules stored in the database during the processing of prior assertions),
+"no" (if the answer is not so justified), or a list of all values that
+answer the question (if the question is not a yes/no question).
+</p><h4>
+The Overall Strategy</h4>
+The overall strategy for the program is simple, and given by the following
+code:&nbsp; give a prompt, read a sentence (assertion or query), parse
+it and discover its meaning as a logical form, convert that logical form
+into a Prolog clause, generate and display a reply, and then repeat these
+steps.&nbsp; If the sentence cannot be successfully parsed (grammatical
+or lexicon error) or if a Prolog clause cannot be generated from the logical
+form, then the message <tt>Error: "too difficult"</tt> appears for that
+sentence.
+<pre>run :-&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; write('&gt;&gt; '),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % prompt the user
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read_sent(Words),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % read a sentence
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; talk(Words, Reply),&nbsp;&nbsp;&nbsp;&nbsp; % process it with TALK
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print_reply(Reply),&nbsp;&nbsp;&nbsp;&nbsp; % generate a reply
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % pocess more sentences
+
+%%% talk(Sentence, Reply)
+%%%
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Sentence ==&gt; sentence to form a reply to
+%%%&nbsp;&nbsp;&nbsp;&nbsp; Reply&nbsp;&nbsp;&nbsp; &lt;== appropriate reply to the sentence
+
+talk(Sentence, Reply) :-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % parse the sentence
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parse(Sentence, LF, Type),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % convert the FOL logical form into a Horn&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % clause, if possible
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clausify(LF, Clause, FreeVars), !,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % concoct a reply, based on the clause and&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % whether sentence was a query or assertion
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reply(Type, FreeVars, Clause, Reply).
+
+talk(Sentence, error('too difficult')).</pre>
+
+<h4>
+The Lexicon</h4>
+Six different forms for each verb are stored in the lexicon: the nonfinite
+form, the third person singular form, the past tense, the past participle,
+the present participle, and the logical form.
+<p>The logical form for an intransitive verb is an encoding of the lambda
+expression \x.verb(x), where x is a placeholder for the subject.&nbsp;
+For instance, "halts" has a logical form that encodes the expression \x.halts(x),
+or <tt>X^ 'halts(X)</tt>.
+</p><pre>iv(nonfinite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [IV], {iv(IV, _, _, _, _, LF)}.
+iv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [IV], {iv(_, IV, _, _, _, LF)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [IV], {iv(_, _, IV, _, _, LF)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iv(past_participle, LF) --&gt; [IV], {iv(_, _, _, IV, _, LF)}.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+iv(pres_participle, LF) --&gt; [IV], {iv(_, _, _, _, IV, LF)}.
+iv(halt, halts, halted, halted, halting,&nbsp;&nbsp; X^ `halts(X)).
+iv(run,&nbsp; runs,&nbsp; ran,&nbsp;&nbsp;&nbsp; run,&nbsp;&nbsp;&nbsp; running,&nbsp;&nbsp; X^ `runs(X)).</pre>
+Transitive verbs have as a logical form an encoding of the lambda expression
+\x.\y.verb(x, y), where x is the subject of the verb and y is the object.&nbsp;
+For instance, "speaks" is an encoding of \x.\y.speaks(x, y), or <tt>X^Y^
+'speaks(X, Y)</tt>.
+<pre>tv(nonfinite,&nbsp;&nbsp; LF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [TV],&nbsp;&nbsp; {tv(TV, _, _, _, _, LF)}.
+tv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [TV],&nbsp;&nbsp; {tv(_, TV, _, _, _, LF)}.
+tv(finite,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LF)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt; [TV],&nbsp;&nbsp; {tv(_, _, TV, _, _, LF)}.
+tv(past_participle,&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [TV],&nbsp;&nbsp; {tv(_, _, _, TV, _, LF)}.
+tv(pres_participle,&nbsp;&nbsp;&nbsp;&nbsp; LF) --&gt; [TV],&nbsp;&nbsp; {tv(_, _, _, _, TV, LF)}.
+tv(write,&nbsp;&nbsp; writes,&nbsp;&nbsp; wrote,&nbsp;&nbsp;&nbsp;&nbsp; written,&nbsp;&nbsp; writing,&nbsp;&nbsp;&nbsp; X^Y^ `writes(X,Y)).
+tv(read,&nbsp;&nbsp;&nbsp; reads,&nbsp;&nbsp;&nbsp; read,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reading,&nbsp;&nbsp;&nbsp; X^Y^ `reads(X,Y)).
+tv(speak,&nbsp;&nbsp; speaks,&nbsp;&nbsp; spoke,&nbsp;&nbsp;&nbsp;&nbsp; spoken,&nbsp;&nbsp;&nbsp; speaking,&nbsp;&nbsp; X^Y^ `speaks(X,Y)).
+tv(meet,&nbsp;&nbsp;&nbsp; meets,&nbsp;&nbsp;&nbsp; met,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; met,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; meeting,&nbsp;&nbsp;&nbsp; X^Y^ `meets(X,Y)).
+tv(concern, concerns, concerned, concerned, concerning, X^Y^ `concerns(X,Y)).
+tv(run,&nbsp;&nbsp;&nbsp;&nbsp; runs,&nbsp;&nbsp;&nbsp;&nbsp; ran,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; running,&nbsp;&nbsp;&nbsp; X^Y^ `runs(X,Y)).</pre>
+Auxiliary verbs (to, does, did, ...), relative pronouns (that, who, whom),
+wh-words (who, whom, what) are enoded in their usual way.
+<p>Determiners are encoded with logical forms that reflect their meaning.&nbsp;
+For example, if we assert "Bertrand wrote every book", the system needs
+a logical form that will say, in effect, that "for every X , if X is a
+book then bertrand wrote X."&nbsp; The logical form for "every" in the
+lexicon has that structure:
+</p><p>det(every,&nbsp; (X^S1) ^ (X^S2) ^ all(X, S1=&gt;S2)).
+</p><p>Similarly, the logical form for determiners "a" and "some" are coded
+as follows:
+</p><p>det(a,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (X^S1) ^ (X^S2)
+^ exists(X, S1&amp;S2)).
+<br>det(some,&nbsp;&nbsp; (X^S1) ^ (X^S2) ^ exists(X, S1&amp;S2)).
+</p><p>There are two different types of nouns, those which represent classifications
+of objects or people, and proper nouns (which represent specific objects
+and people themselves -- e.g., principia).&nbsp; The first type of noun
+has a logical form which allows proper nouns to become members of that
+classification.&nbsp; For instance, the classification "author" has the
+logical form \x.author(x), which is encoded <tt>X^ `author(X)</tt>.&nbsp;
+The second type has itself as its logical form.
+</p><pre>n(author,&nbsp;&nbsp;&nbsp;&nbsp; X^ `author(X)).
+pn(principia, principia).</pre>
+
+<h4>
+The Grammar</h4>
+The grammar for this program parses simple declarative sentences, sentences
+with relative clauses, inverted sentences, and various kinds of questions,
+using familiar strategies from our earlier studies of syntax.&nbsp; What's
+new here is that each grammar rule generates a logical form as a byproduct
+(rather than a portion of a parse tree).
+<pre>s(S, GapInfo)&nbsp;&nbsp; --&gt; np(VP^S, nogap), vp(finite, VP, GapInfo).
+
+sinv(S, GapInfo) --&gt; aux(finite/Form, VP1^VP2),&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np(VP2^S, nogap), vp(Form, VP1, GapInfo).
+
+q(S =&gt; `answer(X))&nbsp;&nbsp; --&gt; whpron, vp(finite, X^S, nogap).
+q(S =&gt; `answer(X))&nbsp;&nbsp; --&gt; whpron, sinv(S, gap(np, X)).
+q(S =&gt; `answer(yes)) --&gt; sinv(S, nogap).
+q(S =&gt; `answer(yes)) --&gt; [is],&nbsp; np((X^S0)^S, nogap),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np((X^true)^exists(X,S0&amp;true), nogap).
+
+np(NP, nogap) --&gt; det(N2^NP), n(N1), optrel(N1^N2).
+np(NP, nogap) --&gt; pn(NP).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+np((X^S)^S, gap(np, X)) --&gt; [].
+
+vp(Form, X^S, GapInfo)&nbsp; --&gt; tv(Form, X^VP), np(VP^S, GapInfo).
+vp(Form, VP, nogap)&nbsp;&nbsp;&nbsp;&nbsp; --&gt; iv(Form, VP).
+vp(Form1, VP2, GapInfo) --&gt; aux(Formrlogina1/Form2, VP1^VP2),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; vp(Form2, VP1, GapInfo).
+vp(Form1, VP2, GapInfo) --&gt; rov(Form1/Form2, NP^VP1^VP2),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np(NP, GapInfo), vp(Form2, VP1, nogap).
+vp(Form2, VP2, GapInfo) --&gt; rov(Form1/Form2, NP^VP1^VP2),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; np(NP, nogap), vp(Form1, VP1, GapInfo).
+vp(finite, X^S, GapInfo) --&gt; [is], np((X^P)^exists(X,S&amp;P), GapInfo).
+
+optrel((X^S1)^(X^(S1&amp;S2))) --&gt; relpron, vp(finite, X^S2, nogap).
+optrel((X^S1)^(X^(S1&amp;S2))) --&gt; relpron, s(S2, gap(np, X)).
+optrel(N^N) --&gt; [].</pre>
+
+<h4>
+Parsing Example: Assertions</h4>
+Parsing an assertion proceeds in two steps: developing a logical form for
+the meaning of the assertion and then adding that logical form (converted
+to Prolog) to the database of facts and rules.&nbsp; The first step is
+initiated by:
+<p>parse(Sentence, LF, assertion) :- s(LF, nogap, Sentence, []).
+</p><p>The reply to an assertion is made simply be reporting to the user the
+Prolog fact or rule that was generated from the logical form after the
+paring of the sentence.&nbsp; The reply function also adds this fact or
+rule to the Prolog program, so that it can participate in answering future
+queries.&nbsp; This is accomplished by the Prolog function "assert", which
+takes any Prolog fact or rule and adds it dynamically to the database.
+</p><pre>reply(assertion, _FreeVars, Assertion, asserted(Assertion)) :- assert(Assertion), !.</pre>
+
+<h4>
+Parsing Example: Queries</h4>
+Parsing a query requires that an answer be developed alongside the logical
+form.&nbsp; If the sentence is a query, then the productions for function
+q all return a logical form LF =&nbsp; "<tt>Q =&gt; answer(A)"</tt>.&nbsp;
+This logical form is then used to develop an answer, which will be true
+exactly when the database of facts and rules can justify the truth of A.&nbsp;
+The first call in this process is:
+<p>parse(Sentence, LF, query) :- q(LF, Sentence, []).
+</p><p>For example, the parse for the sentence "who wrote principia" wlll return
+the logical form
+</p><p>LF = `writes(X, principia)=&gt; `answer(X)
+</p><p>The reply to a query is made by first finding a set of all the answers
+that satisfy the query, replying with that set (if it exists), or "no"
+if it doesn't.
+</p><p>reply(query, FreeVars, (answer(Answer):-Condition), Reply) :-
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(setof(Answer, FreeVars^Condition, Answers) -&gt; Reply = answer(Answers)
+;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(Answer = yes -&gt; Reply = answer([no]) ;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Reply = answer([none]))), !.
+</p><p>This can be read as an ordinary "if-then-else" statement, where the
+arrows -&gt; denote "then" and the semicolons (;) denote "or else".&nbsp;
+So the first line generates the Reply if such a set is found, and the second
+generates the Reply if the answer is "yes," and otherwise the third line
+generates the Reply.
+</p><p>The <tt>setof</tt> function builds an ordered set of instances of Answer,
+called Answers (in the form of a list without duplicates) that satisfies
+the goal FreeVars^Condition.&nbsp; For instance, if the goal is answer(X)
+:= writes(X, principia), then the call is setof(X, FreeVars^writes(X, principia),
+Answers).&nbsp; If the fact writes(bertrand, principia) is in the database
+at the time, then setof will return Answers = [bertrand].&nbsp; Otherwise,
+setof will fail.
+</p><h4>
+Clausify: Converting Logical Forms to Prolog Clauses</h4>
+The function clausify converts a logical form to an equivalent Prolog fact
+or rule, whenever it can.&nbsp; That is, given a logical form FOL, clausify
+generates a Clause which is the equivalent Prolog fact or rule.&nbsp; A
+third argument to the function, <tt>FreeVars</tt>, is a list of the variables
+that are free in the antecedent of the clause.
+<pre>clausify(FOL, Clause, FreeVars)</pre>
+Universally quantified logical forms are clausified by stripping the quantifier
+from the clausified version of the logical form.&nbsp; For instance, <tt>clausify(all(B,
+book(B) &amp; wrote(bertrand, B)), Clause, FreeVars)</tt> leaves Clause
+= <tt>book(B), wrote(bertrand, B)</tt> and FreeVars = <tt>[B]</tt>.&nbsp;
+This makes sense, since both forms are logically equivalent to "B is a
+book if and only if bertrand wrote B."
+<pre>clausify(all(X,F0),F,[X|V]) :- clausify(F0,F,V).</pre>
+For implications, the consequent C0 is clausifed as the literal C and the
+antecedent A0 is clausified as A.&nbsp; Then the Prolog clause C :- A,
+itself an implication, is formed out of these results.&nbsp; The list V
+of free variables is passed along in this process.
+<pre>clausify(A0=&gt;C0,(C:-A),V) :- clausify_literal(C0,C), clausify_antecedent(A0,A,V).</pre>
+Literals are left unchanged by clausify, though an empty free variable
+list is generated.
+<p>clausify(C0,C,[]) :- clausify_literal(C0,C).
+</p><p>The function clausify_antecedent(FOL, Clause, FreeVars) leaves literals
+unchanged (except the literal marker is removed).&nbsp; For conjunctions,
+clausify-antecedent clausifies each conjunct separately and then combines
+them with a comma to form the right-hand side of a Prolog rule.&nbsp; For
+existentials, the quantifier is stripped and the free variable is added
+to the free variable list.
+</p><p>clausify_antecedent(L0,L,[]) :- clausify_literal(L0,L).
+</p><p><tt>clausify_antecedent(E0&amp;F0, (E,F), V) :- clausify_antecedent(E0,E,V0),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+clausify_antecedent(F0,F,V1),</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+conc(V0,V1,V).</tt>
+<br><tt>clausify_antecedent(exists(X,F0), F, [X|V]) :- clausify_antecedent(F0,F,V).</tt>
+</p><p><tt>clausify_literal(`L, L).</tt>
+<br>&nbsp;
+
+
+</p></body></html>
