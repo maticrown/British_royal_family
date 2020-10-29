@@ -30,6 +30,7 @@ tv(precede,   precedes,   preceded,  precedes , preceding,    X^Y^ precedes(X,Y)
 tv(inherit,   inherits,   inherited,  inherited , inheriting,    X^Y^ inherits(X,Y)).
 tv(own,   owns,   owned,  owned , owning,    X^Y^ owns(X,Y)).
 tv(succede,   succedes,   succeded,  succedes , succeding,    X^Y^ succedes(X,Y)).
+tv(marry,   marries,   married,     married,   marrying,    X^Y^ married(X,Y)).
 %%
 
 tv(write,   writes,   wrote,     written,   writing,    X^Y^ writes(X,Y)).

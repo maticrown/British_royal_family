@@ -39,6 +39,7 @@ pn(swahili,  swahili).
 
 %% added
 pn(charles,  charles).
+pn(victoria,  victoria).
 pn(elizabethII, elizabethII).
 pn(camilla, camilla).
 pn(anne, anne).
