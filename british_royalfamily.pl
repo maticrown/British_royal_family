@@ -39,8 +39,7 @@ run :-
     write('>> '),           % prompt the user
     read_sent(Words),       % read a sentence
     nth0(0, Words, FirstWord),
-    (FirstWord = 'stop', !, write_ln('Stopped successfully.') ;
+    (FirstWord = 'l', !, load, write_ln('Reloaded successfully.') ;
     talk(Words, Reply),     % process it with TALK
-    print_reply(Reply),     % generate a reply
-    run                    % pocess more sentences
-    ).
+    print_reply(Reply)),     % generate a reply
+    run.                    % pocess more sentences
