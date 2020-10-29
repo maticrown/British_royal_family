@@ -20,21 +20,21 @@ n(prince,    X^ prince(X)).
 n(princess,  X^ princess(X)).
 
 %%%
-n(parent, X^ parent(X)).
-n(father, X^ father(X)).
-n(mother, X^ mother(X)).
-n(brother, X^ brother(X)).
-n(sister, X^ sister(X)).
-n(son, X^ son(X)).
-n(daughter, X^ daughter(X)).
-n(child, X^ child(X)).
-n(grandparent, X^ grandparent(X)).
-n(grandmother, X^ grandmother(X)).
-n(grandfather, X^ grandfather(X)).
-n(cousin, X^ cousin(X)).
-n(nephew, X^ nephew(X)).
-n(niece, X^ niece(X)).
-n(ancestor, X^ ancestor(X)).
+n(parent, X^ parent(X, _)).
+n(father, X^ father(X, _)).
+n(mother, X^ mother(X, _)).
+n(brother, X^ brother(X, _)).
+n(sister, X^ sister(X, _)).
+n(son, X^ son(X, _)).
+n(daughter, X^ daughter(X, _)).
+n(child, X^ child(X, _)).
+n(grandparent, X^ grandparent(X, _)).
+n(grandmother, X^ grandmother(X, _)).
+n(grandfather, X^ grandfather(X, _)).
+n(cousin, X^ cousin(X, _)).
+n(nephew, X^ nephew(X, _)).
+n(niece, X^ niece(X, _)).
+n(ancestor, X^ ancestor(X, _)).
 
 %%%
 
