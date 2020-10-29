@@ -2,7 +2,7 @@
 % loading the facts & relations
 load :-
     consult('/proj/facts/parentings.pl'),
-    consult('/proj/facts/person_detailes.pl'),
+    consult('/proj/facts/person_details.pl'),
     consult('/proj/facts/marriages.pl'),
 
     consult('/proj/relations/family_relations.pl'),

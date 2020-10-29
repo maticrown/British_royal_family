@@ -1,3 +1,4 @@
+
 female(anne).
 female(camilla).
 female(diana).
