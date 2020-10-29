@@ -3,10 +3,13 @@
 heir_to_throne(H):-
   oldest(H),not(monarch_husband(philip,W)),monarch(W),!.
 
+queen(X):-monarch(X),female(X).
+
+prince(X) :- parent(Z, X), monarch(Z), male(X).
+
+princess(Y) :- parent(Z, Y), monarch(Z), female(Y).
 
 generation(1;2;3;4).
-
-queen(X):-monarch(X),female(X).
 
 prince_1(Y):-monarch(Y),male(Y),generation(1).
 

@@ -1,15 +1,22 @@
 
 % loading the facts & relations
-:- consult('facts/parental_relations.pl').
-:- consult('facts/personal_facts.pl').
+:- consult('facts/parentings.pl').
+:- consult('facts/person_detailes.pl').
+:- consult('facts/marriages.pl').
+
 :- consult('relations/family_relations.pl').
 :- consult('relations/monarchial_relations.pl').
-:- consult('facts/marriage_relations.pl').
 
-%%%% for parsing questions and answers
-:- op(500,xfy,'&').
-:- op(510,xfy,'=>').
-:- op(100,fx,'`').
+:- consult('shared/operators.pl').
+
+:- consult('algorithm/talk.pl').
+:- consult('algorithm/clausifier.pl').
+
+:- consult('io/read_sent.pl').
+:- consult('io/reply.pl').
+:- consult('io/print_reply.pl').
+:- consult('io/print_answers.pl').
+
 
 %% This is the main run function that starts the questions and answers
 %% of the "Marechet Mumche"
@@ -19,35 +26,6 @@ run :-
         talk(Words, Reply),     % process it with TALK
         print_reply(Reply),     % generate a reply
         run.                    % pocess more sentences
-
-%%% talk(Sentence, Reply)
-%%%
-%%%     Sentence ==> sentence to form a reply to
-%%%     Reply    <== appropriate reply to the sentence
-
-%%% The main parsing function
-talk(Sentence, Reply) :-                  % parse the sentence
-         parse(Sentence, LF, Type),
-       % convert the FOL logical form into a Horn
-       % clause, if possible
-         clausify(LF, Clause, FreeVars), !,
-       % concoct a reply, based on the clause and
-       % whether sentence was a query or assertion
-         reply(Type, FreeVars, Clause, Reply).
-
-talk(_Sentence, error('too difficult')).
-%%% parse(sentence, LF, Type)
-%%%
-%%% Sentence    ==> sentence to parse
-%%%     LF      <== logical form (in FOL) of sentence
-%%%     Type    <== type of Sentence
-%%%             (query or assertion)
-
-% Parsing an assertion: a finite sentence without gaps.
-parse(Sentence, LF, assertion) :- s(LF, nogap, Sentence, []).
-
-% Parsing a query: a question.
-parse(Sentence, LF, query) :- q(LF, Sentence, []).
 
 
 /* Nonterminal names:
@@ -266,182 +244,3 @@ pn(james, james).
 pn(lena, lena).
 pn(pound,    pound).
 %%
-
-%%%  Clausifier
-
-%%%  clausify(FOL, Clause, FreeVars)
-%%%
-%%%  FOL      ==> FOL expression to be converted to clause form
-%%%  Clause   <== clause form of FOL expression
-%%%  FreeVars <== free variables in clause
-
-% Universals: variable is left implicitly scoped.
-clausify(all(X,F0),F,[X|V]) :- clausify(F0,F,V).
-
-% Implications: consequent must be a literal,
-%               antecedent is clausified specially.
-clausify(A0=>C0,(C:-A),V) :- clausify_literal(C0,C),
-                             clausify_antecedent(A0,A,V).
-
-% Literals: left unchanged (except literal marker is removed).
-clausify(C0,C,[]) :- clausify_literal(C0,C).
-
-% Note that conjunctions and existentials are
-% disallowed, since they can't form Horn clauses.
-
-%%% clausify_antecedent(FOL, Clause, FreeVars)
-%%%
-%%%     FOL      ==> FOL expression to be converted to clause form
-%%%     Clause   <== clause form of FOL expression
-%%%     FreeVars ==> list of free variables in clause
-
-% Literals: left  unchanged (except literal marker is removed).
-clausify_antecedent(L0,L,[]) :- clausify_literal(L0,L).
-
-% Conjunctions: each conjunct is clausified separately.
-clausify_antecedent(E0&F0, (E,F), V) :-
-        clausify_antecedent(E0,E,V0),
-        clausify_antecedent(F0,F,V1),
-        conc(V0,V1,V).
-
-% Existentials: variable is left implicitly scoped.
-clausify_antecedent(exists(X,F0), F, [X|V]) :-
-        clausify_antecedent(F0,F,V).
-
-%%%  clausify_literal(Literal, Clause)
-%%%
-%%%      Literal ==> FOL literal to be converted
-%%%                  to clause form
-%%%      Clause  <== clause form of FOL expression
-
-% Literal is left unchanged (except literal marker is removed).
-clausify_literal(L, L).
-
-% Auxiliary Predicates
-
-conc([], List, List).
-conc([Element|Rest], List, [Element|LongRest]) :-
-                        conc(Rest, List, LongRest).
-
-%%% read_sent(Words)
-%%% input ==> series of words terminated by a new line character
-%%% Words <== list of the words
-read_sent(Words) :- get0(Char), read_sent(Char, Words).
-
-read_sent(C, []) :- newline(C), !.
-read_sent(C, Words) :- space(C), !, get0(Char),
-                        read_sent(Char, Words).
-read_sent(C, [Word|Words]) :- read_word(C, Chars, Next),
-                        name(Word, Chars),
-                        read_sent(Next, Words).
-
-read_word(C, [], C) :- space(C), !.
-read_word(C, [], C) :- newline(C), !.
-read_word(C, [C|Chars], Last) :- get0(Next),
-                        read_word(Next, Chars, Last).
-
-newline(10).
-space(32).
-
-%%% reply(Type, FreeVars, Clause, Reply)
-%%%
-%%%     Type    ==>     the constant "query" or "assertion"
-%%%                            depending on whether clause should
-%%%                            be interpreted as a query or assertion
-%%%     FreeVars        ==>     the free variables (to be
-%%%                            interpreted existentially) in the clause
-%%% Clause ==> the clause being replied to
-%%% Reply  <== the reply
-%%%
-%%% If the clause is interpreted as an assertion,
-%%% the predicate has a side effect of asserting
-%%% the clause to the database.
-
-%Replying to a query.
-reply(query, FreeVars,
-     (answer(Answer):-Condition), Reply) :-
-   % find all the answers that satisfy the query,
-   % replying with that set if it exists, or "no"
-   % or "none" if it doesn't.
-     (setof(Answer, FreeVars^Condition, Answers)
-         -> Reply = answer(Answers)
-         ;  (Answer = yes
-               -> Reply = answer([no])
-               ;  Reply = answer([none]))), !.
-
-% Replying to an assertion.
-% assert the assertion and tell user what we asserted
-reply(assertion, _FreeVars, Assertion, asserted(Assertion)) :-
-        assert(Assertion), !.
-
-% Replying to some other type of sentence.
-reply(_Type, _FreeVars, _Clause, error('unknown type')).
-
-
-%%%
-reply(retraction, _FreeVars, retraction, retracted(Retraction)) :-
-        retract(Retraction), !.
-%%%
-
-
-
-%%% print_reply(Reply)
-%%%
-%%% Reply ==> reply generated by reply predicate
-%%%           that is to be printed to the standard output.
-
-print_reply(error(ErrorType)) :-
-     write('Error: "'), write(ErrorType), write('."'), nl.
-
-print_reply(asserted(Assertion)) :-
-     write('Asserted "'), write(Assertion), write('."'), nl.
-%%% added
-print_reply(retract(Retraction)):-
-    write('Retracted"'), write(Retraction), write('."'),nl.
-%%%
-print_reply(answer(Answers)) :- print_answers(Answers).
-
-%%%     print_answer(Answers)
-%%%
-%%%     Answers ==> nonempty list of answers to be printed
-%%%                 to the standard output separated by commas.
-
-print_answers([Answer]) :- !, write(Answer), write('.'), nl.
-
-print_answers([Answer|Rest]) :- write(Answer), write(', '),
-                                print_reply(answer(Rest)).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

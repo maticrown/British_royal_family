@@ -1,1 +1,1 @@
-docker run -it -v %cd%:/p swipl
+docker run -it -v %cd%:/proj swipl
