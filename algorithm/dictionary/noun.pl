@@ -1,5 +1,5 @@
-
 n(LF)     --> [N], {n(N, LF)}.
+/*
 n(author,     X^ author(X)).
 n(book,       X^ book(X)).
 n(professor,  X^ professor(X)).
@@ -8,6 +8,7 @@ n(programmer, X^ programmer(X)).
 n(student,    X^ student(X)).
 n(person,     X^ person(X)).
 n(language,   X^ language(X)).
+*/
 %%% added
 n(monarche,   X^ monarche(X)).
 n(money,      X^ money(X)).
@@ -17,9 +18,17 @@ n(male_,      X^ male_(X)).
 n(female_,    X^ female_(X)).
 n(prince_,    X^ prince_(X)).
 n(princess_,  X^ princess_(X)).
+
+%%%
+n(parent_, X^ parent_(X)).
+n(father_, X^ father_(X)).
+n(mother_, X^ mother_(X)).
+%%%
+
 %%%
 
 pn((E^S)^S) --> [PN], {pn(PN, E)}.
+/*
 pn(allen,    allen).
 pn(bruce,    bruce).
 pn(bertrand, bertrand).
@@ -36,10 +45,9 @@ pn(english,  english).
 pn(chinese,  chinese).
 pn(korean,   korean).
 pn(swahili,  swahili).
-
+*/
 %% added
 pn(charles,  charles).
-pn(victoria,  victoria).
 pn(elizabethII, elizabethII).
 pn(camilla, camilla).
 pn(anne, anne).
