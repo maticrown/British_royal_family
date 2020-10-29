@@ -14,15 +14,23 @@ n(monarch,   X^ monarch(X)).
 n(money,      X^ money(X)).
 n(acting_royal, X^ acting_royal(X)).
 n(gender,     X^ gender(X)).
-n(male_,      X^ male_(X)).
-n(female_,    X^ female_(X)).
-n(prince_,    X^ prince_(X)).
-n(princess_,  X^ princess_(X)).
+n(male,      X^ male_(X)).
+n(female,    X^ female_(X)).
+n(prince,    X^ prince_(X)).
+n(princess,  X^ princess_(X)).
 
 %%%
-n(parent_, X^ parent_(X)).
-n(father_, X^ father_(X)).
-n(mother_, X^ mother_(X)).
+n(parent, X^ parent(X)).
+n(father, X^ father(X)).
+n(mother, X^ mother(X)).
+n(brother, X^ brother(X)).
+n(sister, X^ sister(X)).
+n(son, X^ son(X)).
+n(daughter, X^ daughter(X)).
+n(child, X^ child(X)).
+n(grandparent, X^ grandparent(X)).
+n(grandmother, X^ grandmother(X)).
+n(grandfather, X^ grandfather(X)).
 %%%
 
 %%%
