@@ -31,6 +31,11 @@ n(child, X^ child(X)).
 n(grandparent, X^ grandparent(X)).
 n(grandmother, X^ grandmother(X)).
 n(grandfather, X^ grandfather(X)).
+n(cousin, X^ cousin(X)).
+n(nephew, X^ nephew(X)).
+n(niece, X^ niece(X)).
+n(ancestor, X^ ancestor(X)).
+
 %%%
 
 %%%
