@@ -1,5 +1,6 @@
 %%%     Questions
 
+%% These are for the parsing of the questions
 q(S => answer(X))   --> whpron, vp(finite, X^S, nogap).
 q(S => answer(X))   --> whpron, sinv(S, gap(np, X)).
 q(S => answer(yes)) --> sinv(S, nogap).
