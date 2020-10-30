@@ -14,4 +14,4 @@ There are many other questions that can be asked, regarding birth and death year
 
 If you want to exit the stream run the press "ctrl+c" and then "a" for abort.
 Once back in the main Prolog part you can ask regular questions such as "nephew(X,Y)." and get the list of possible answers.
-You may also find out who is in the line of succession as heir to the throne by typing "eldest_kid(H)." and get the answer as charles with his birth year.
+You may also find out who is in the line of succession as heir to the throne by typing "eldest_person(H)." and get the answer as charles with his birth year.
