@@ -1,0 +1,17 @@
+First, compile the file using SWI Prolog or Using Docker on Visual Studio.
+
+Enter "run." as the command in order to start the "Ma'arechet Mumche" who can parse sentences and using our defined predicats, return appropriate answers.
+
+Once in the run you may ask for example: "who married victoria" (without the qutotaion marks) and the answer should return as "albert".
+The same will go for the question: "who married albert" and the answer will return as victoria.
+
+Another type of question you ask is a boolean type of question such as: "is philip a parent" and the answer will return as "yes".
+
+If a wrong relation in the question is asked such as "who married max" (with max not being in the defined database of monarchs), the answer will return as "too difficult".
+In case a wrong relation is in a boolean type of question, such as "is max a parent", the answer will return as "no".
+
+There are many other questions that can be asked, regarding birth and death years, gender and different family relations for example.
+
+If you want to exit the stream run the press "ctrl+c" and then "a" for abort.
+Once back in the main Prolog part you can ask regular questions such as "nephew(X,Y)." and get the list of possible answers.
+You may also find out who is in the line of succession as heir to the throne by typing "eldest_kid(H)." and get the answer as charles with his birth year.
