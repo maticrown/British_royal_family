@@ -1,25 +1,12 @@
+% Nouns
+
 n(LF)     --> [N], {n(N, LF)}.
-/*
-n(author,     X^ author(X)).
-n(book,       X^ book(X)).
-n(professor,  X^ professor(X)).
-n(program,    X^ program(X)).
-n(programmer, X^ programmer(X)).
-n(student,    X^ student(X)).
-n(person,     X^ person(X)).
-n(language,   X^ language(X)).
-*/
-%%% added
-n(monarch,   X^ monarch(X)).
-n(money,      X^ money(X)).
-n(acting_royal, X^ acting_royal(X)).
-n(gender,     X^ gender(X)).
+
 n(male,      X^ male(X)).
 n(female,    X^ female(X)).
 n(prince,    X^ prince(X)).
 n(princess,  X^ princess(X)).
-
-%%%
+n(monarch,   X^ monarch(X)).
 n(parent, X^ parent(X, _)).
 n(father, X^ father(X, _)).
 n(mother, X^ mother(X, _)).
@@ -36,30 +23,10 @@ n(nephew, X^ nephew(X, _)).
 n(niece, X^ niece(X, _)).
 n(ancestor, X^ ancestor(X, _)).
 
-%%%
-
-%%%
+% Proper nouns
 
 pn((E^S)^S) --> [PN], {pn(PN, E)}.
-/*
-pn(allen,    allen).
-pn(bruce,    bruce).
-pn(bertrand, bertrand).
-pn(terry,    terry).
-pn(bill,     bill).
-pn(david,    david).
-pn(kathy,    kathy).
-pn(behshad,  behshad).
-pn(shane,    shane).
-pn(principia, principia).
-pn(shrdlu,   shrdlu).
-pn(prolog,   prolog).
-pn(english,  english).
-pn(chinese,  chinese).
-pn(korean,   korean).
-pn(swahili,  swahili).
-*/
-%% added
+
 pn(anne, anne).
 pn(camilla, camilla).
 pn(diana, diana).
@@ -105,5 +72,3 @@ pn(henry, henry).
 pn(viscount, viscount).
 pn(andrew, andrew).
 pn(antony, antony).
-pn(pound, pound).
-%%

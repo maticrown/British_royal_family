@@ -1,4 +1,7 @@
 
+
+% Auxiliary verb
+
 aux(Form, LF) --> [Aux], {aux(Aux, Form, LF)}.
 aux(to,    infinitival/nonfinite,    VP^ VP).
 aux(does,  finite/nonfinite,         VP^ VP).
