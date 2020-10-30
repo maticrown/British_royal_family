@@ -1,3 +1,4 @@
+%% Parsing different forms of the sentences as whole
 
 %%% Declarative Sentences
 
