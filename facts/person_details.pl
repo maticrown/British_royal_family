@@ -71,13 +71,13 @@ births(alexandra, 1844).
 births(mary, 1867).
 births(simpson, 1896). % TODO: ?
 births(elizabethBowesLyon, 1900).
-births(elizabethII, 1926 ).
+births(elizabethII, 1926).
 births(margaret, 1930).
 births(dianaSpencer, 1961).
 births(anne, 1950).
 births(catherine, 1982).
 births(albert, 1819).
-births(edwardVII, 1841 ).
+births(edwardVII, 1841).
 births(georgeV, 1865).
 births(edwardVIII, 1894).
 births(georgeVI, 1895).
