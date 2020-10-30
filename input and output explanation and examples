@@ -12,6 +12,6 @@ In case a wrong relation is in a boolean type of question, such as "is max a par
 
 There are many other questions that can be asked, regarding birth and death years, gender and different family relations for example.
 
-If you want to exit the stream run the press "ctrl+c" and then "a" for abort.
+If you want to exit the stream run the press "stop" and then press enter.
 Once back in the main Prolog part you can ask regular questions such as "nephew(X,Y)." and get the list of possible answers.
 You may also find out who is in the line of succession as heir to the throne by typing "eldest_person(H)." and get the answer as charles with his birth year.
