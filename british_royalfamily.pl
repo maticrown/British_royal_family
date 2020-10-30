@@ -30,8 +30,6 @@ load :-
     consult('/proj/algorithm/dictionary/determiner.pl'),
     consult('/proj/algorithm/dictionary/noun.pl').
 
-stop.
-
 %% This is the main run function that starts the questions and answers
 %% of the "Marechet Mumche"
 run :-
