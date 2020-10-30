@@ -1,17 +1,29 @@
+% Nouns
+
 n(LF)     --> [N], {n(N, LF)}.
 
-n(monarche,   X^ monarche(X)).
-n(money,      X^ money(X)).
-n(acting_royal, X^ acting_royal(X)).
-n(gender,     X^ gender(X)).
-n(male_,      X^ male_(X)).
-n(female_,    X^ female_(X)).
-n(prince_,    X^ prince_(X)).
-n(princess_,  X^ princess_(X)).
+n(male,      X^ male(X)).
+n(female,    X^ female(X)).
+n(prince,    X^ prince(X)).
+n(princess,  X^ princess(X)).
+n(monarch,   X^ monarch(X)).
+n(parent, X^ parent(X, _)).
+n(father, X^ father(X, _)).
+n(mother, X^ mother(X, _)).
+n(brother, X^ brother(X, _)).
+n(sister, X^ sister(X, _)).
+n(son, X^ son(X, _)).
+n(daughter, X^ daughter(X, _)).
+n(child, X^ child(X, _)).
+n(grandparent, X^ grandparent(X, _)).
+n(grandmother, X^ grandmother(X, _)).
+n(grandfather, X^ grandfather(X, _)).
+n(cousin, X^ cousin(X, _)).
+n(nephew, X^ nephew(X, _)).
+n(niece, X^ niece(X, _)).
+n(ancestor, X^ ancestor(X, _)).
 
-n(parent_, X^ parent_(X)).
-n(father_, X^ father_(X)).
-n(mother_, X^ mother_(X)).
+% Proper nouns
 
 pn((E^S)^S) --> [PN], {pn(PN, E)}.
 
@@ -60,4 +72,7 @@ pn(henry, henry).
 pn(viscount, viscount).
 pn(andrew, andrew).
 pn(antony, antony).
+<<<<<<< HEAD
+=======
 pn(pound, pound).
+>>>>>>> Original/main
