@@ -1,3 +1,4 @@
+%% additional relations regrading monarchs only
 
 %%women are direct heirs since they changed the law in 2011
 heir_to_throne(H):-
