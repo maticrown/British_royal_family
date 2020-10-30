@@ -72,3 +72,7 @@ pn(henry, henry).
 pn(viscount, viscount).
 pn(andrew, andrew).
 pn(antony, antony).
+<<<<<<< HEAD
+=======
+pn(pound, pound).
+>>>>>>> Original/main
