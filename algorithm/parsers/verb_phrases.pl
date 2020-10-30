@@ -2,7 +2,7 @@
 %%% Verb Phrases
 
 %%  These are for the parsing of the verbs
-vp(Form, X^S, GapInfo)  --> tv(Formwhowho, X^VP), np(VP^S, GapInfo).
+vp(Form, X^S, GapInfo)  --> tv(Form, X^VP), np(VP^S, GapInfo).
 vp(Form, VP, nogap)     --> iv(Form, VP).
 vp(Form1, VP2, GapInfo) --> aux(Form1/Form2, VP1^VP2),
                             vp(Form2, VP1, GapInfo).
