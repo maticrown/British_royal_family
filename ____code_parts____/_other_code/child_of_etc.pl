@@ -54,6 +54,10 @@ actualSuccessor(Year):-
 oldest(P):-
   aggregate(max(A,Pers),age(Pers,A),max(_,P)).
 
+%%women are direct heirs since they changed the law in 2011
+heir_to_throne(H):-
+  oldest(H),not(monarch_husband(philip,W)),monarch(W),!.
+
 
 %right here
 real_successor(X,Y) :- parent(X,Z), (Y=Z ; successor(Z,Y)).

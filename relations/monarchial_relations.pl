@@ -1,14 +1,10 @@
 %% additional relations regrading monarchs only
 
-%%women are direct heirs since they changed the law in 2011
-heir_to_throne(H):-
-  oldest(H),not(monarch_husband(philip,W)),monarch(W),!.
-
 queen(X):-monarch(X),female(X).
 
-prince(X) :- parent(Z, X), monarch(Z), male(X).
+prince(X) :- male(X), monarch(X) ; (parent(Z, X), monarch(Z)).
 
-princess(Y) :- parent(Z, Y), monarch(Z), female(Y).
+princess(Y) :- female(Y), monarch(Y) ; (parent(Z, Y), monarch(Z)).
 
 generation(1;2;3;4).
 
