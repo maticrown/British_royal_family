@@ -1,3 +1,4 @@
+%% main relations between the monarch family
 
 monarch_wife(W,H):-female(W),married(H,W),monarch(H).
 
