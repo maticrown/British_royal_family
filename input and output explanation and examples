@@ -1,6 +1,14 @@
-First, compile the file using SWI Prolog or Using Docker on Visual Studio.
+Presented By: David Bulka and Matanel Crown.
+Prolog Assingment Regarding an Expert System about the British Royal Family.
 
+
+Running The Program:
+
+First, compile the file using SWI Prolog or Using Docker on Visual Studio.
 Enter "run." as the command in order to start the "Ma'arechet Mumche" who can parse sentences and using our defined predicats, return appropriate answers.
+
+
+Input and Output:
 
 Once in the run you may ask for example: "who married victoria" (without the qutotaion marks) and the answer should return as "albert".
 The same will go for the question: "who married albert" and the answer will return as victoria.
@@ -15,3 +23,17 @@ There are many other questions that can be asked, regarding birth and death year
 If you want to exit the stream run the press "stop" and then press enter.
 Once back in the main Prolog part you can ask regular questions such as "nephew(X,Y)." and get the list of possible answers.
 You may also find out who is in the line of succession as heir to the throne by typing "eldest_person(H)." and get the answer as charles with his birth year.
+
+
+Maman Requirements: 
+
+1. Regarding the part of allowing the user to ask multiple questions, we didn't follow the books instructions of parsing, since we found a more effective way (in our opinion) and so we couldn't do the same way as it was shown there.
+As a result, we added a big database and intersting parts to compensate.
+
+2. The implementation of the "why" trace of the program
+
+3. The addition of maybe and probably to our boolean yes/no questions
+
+4. The parsing of our clauses and sentences are not as described in the book of chapter 15 "Expert System", but a different form of parsing of nouns, verbs and other English grammer objectives.
+This is the option which differs from the book as required in the Maman.
+Every part of the parsing is explained and elaborated in its repective file.
