@@ -23,6 +23,7 @@ reply(query, FreeVars,
          -> Reply = answer(Answers)
          ;  (Answer = yes
                -> Reply = answer([no])
+               %%% TODO: add maybe, probably, could be 
                ;  Reply = answer([none]))), !.
 
 % Replying to an assertion.
