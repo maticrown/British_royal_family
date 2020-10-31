@@ -1,0 +1,26 @@
+:-dynamic already_asked/1.
+
+:- op(800,xfx,<=).
+:- op(600, fx, if).
+:- op(700, xfx, then).
+:- op(300, xfy, or).
+:- op(300, xfy, and).
+
+ask_user(P,Proof,Trace):-
+  nl, write('is it true:'),write(P),write(?),nl,write('choose'),nl,
+  read(Answer),
+  process_answer(Answer,P,Proof,Trace).
+
+process_answer(why, P, Proof, Trace):-
+  display_rule_chain(Trace,0),nl,
+  ask_user(P,Proof,Trace).
+
+process_answer(why,P,Proof,Trace):-
+  display_rule_chain(Trace,0),nl,
+  ask_user(P,Proof,Trace).
+
+display_rule_chain([],_).
+
+display_rule_chain([if C then P| Rules],Indent):-
+  NextIndent is Indent +2,
+  display_rule_chain(Rules,NextIndent).
