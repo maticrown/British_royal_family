@@ -27,13 +27,13 @@ You may also find out who is in the line of succession as heir to the throne by 
 
 Maman Requirements: 
 
-1. Regarding the part of allowing the user to ask multiple questions, we didn't follow the books instructions of parsing, since we found a more effective way (in our opinion) and so we couldn't do the same way as it was shown there.
+Regarding the part of allowing the user to ask multiple questions, we didn't follow the books instructions of parsing, since we found a more effective way (in our opinion) and so we couldn't do the same way as it was shown there.
 As a result, we added a big database and intersting parts to compensate.
 
-2. The implementation of the "why" trace of the program
+The implementation of the "why" trace of the program
 
-3. The addition of maybe and probably to our boolean yes/no questions
+The addition of maybe and probably to our boolean yes/no questions
 
-4. The parsing of our clauses and sentences are not as described in the book of chapter 15 "Expert System", but a different form of parsing of nouns, verbs and other English grammer objectives.
+The parsing of our clauses and sentences are not as described in the book of chapter 15 "Expert System", but a different form of parsing of nouns, verbs and other English grammer objectives.
 This is the option which differs from the book as required in the Maman.
 Every part of the parsing is explained and elaborated in its repective file.
